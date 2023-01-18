@@ -12,6 +12,12 @@ class ListNode:
         self.data: str = data
 
 
+def write_to_file(file_path: str, write_buffer: str):
+    file = open(file_path, 'w')
+    file.write(write_buffer)
+    file.close()
+
+
 # Public Head, Tail and Count is terrible idea too
 class ListRand:
     def __init__(self):
@@ -54,6 +60,10 @@ class ListRand:
         node_from.rand = node_to
 
     def print_list_with_ids(self):
+        if self.head is None:
+            print('Linked List is empty')
+            return
+
         current_node = self.head
         while True:
             random_link = ''
@@ -64,7 +74,11 @@ class ListRand:
                 break
             current_node = current_node.next
 
-    def serialize(self, file: str):
+    def serialize(self, file_path: str):
+        if self.head is None:
+            write_to_file(file_path, '')
+            return
+
         current_node = self.head
         write_buffer = ''
         serialized_nodes_list = []
@@ -87,12 +101,10 @@ class ListRand:
         for element in serialized_nodes_list:
             write_buffer += element
 
-        file = open(file, 'w')
-        file.write(write_buffer)
-        file.close()
+        write_to_file(file_path, write_buffer)
 
-    def deserialize(self, file: str):
-        with open(file) as f:
+    def deserialize(self, file_path: str):
+        with open(file_path) as f:
             text = f.read()
 
         data_buffer = ''
@@ -129,26 +141,46 @@ class ListRand:
                 indexes_to_nodes.get(node_index_from).rand = indexes_to_nodes.get(node_index_to)
 
 
-input_list = ["An:d", "he;re", "we;:go:", "Lorem", "ipsum", "dolor", "sit", "amet,", "consectetur", "adipiscing"]
+def prepare_list(linked_list: ListRand):
+    inputs = ["An:d", "he;re", "we;:go:", "Lorem", "ipsum", "dolor", "sit", "amet,", "consectetur", "adipiscing"]
 
-first_list = ListRand()
+    for e in inputs:
+        linked_list.append(e)
 
-for e in input_list:
-    first_list.append(e)
+    linked_list.add_random_link_by_index(0, 2)
+    linked_list.add_random_link_by_index(3, 3)
+    linked_list.add_random_link_by_index(4, 0)
+    linked_list.add_random_link_by_index(6, 4)
+    linked_list.add_random_link_by_index(6, 3)
+    linked_list.add_random_link_by_index(9, 8)
+    # linked_list.add_random_link_by_index(8, 12) # Will cause "index out of range"
 
-first_list.add_random_link_by_index(0, 2)
-first_list.add_random_link_by_index(3, 3)
-first_list.add_random_link_by_index(4, 0)
-first_list.add_random_link_by_index(6, 4)
-first_list.add_random_link_by_index(6, 3)
-first_list.add_random_link_by_index(9, 8)
-# first_list.add_random_link_by_index(8, 12) # Will cause "index out of range"
 
-first_list.serialize('serialized.txt')
+def positive_test():
+    first_list = ListRand()
+    prepare_list(first_list)
+    first_list.serialize('serialized.txt')
 
-second_list = ListRand()
-second_list.deserialize('serialized.txt')
+    second_list = ListRand()
+    second_list.deserialize('serialized.txt')
 
-first_list.print_list_with_ids()
-print('========')
-second_list.print_list_with_ids()
+    first_list.print_list_with_ids()
+    print('========')
+    second_list.print_list_with_ids()
+
+
+def empty_list_test():
+    empty = ListRand()
+    empty.serialize('serialized.txt')
+
+    result_list = ListRand()
+    result_list.deserialize('serialized.txt')
+
+    empty.print_list_with_ids()
+    print('========')
+    result_list.print_list_with_ids()
+
+
+positive_test()
+print('\n')
+empty_list_test()
